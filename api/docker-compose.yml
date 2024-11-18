@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  postgres:
+    container_name: postgres
+    image: postgres:13
+    volumes:
+      - postgres_db:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - 5432:5432
+
+  adonis_app:
+    container_name: adonis_app
+    restart: always
+    depends_on:
+      - postgres
+    build:
+      context: .
+      target: dependencies
+    ports:
+      - ${PORT}:${PORT}
+      - 9229:9229
+    env_file:
+      - .env
+    environment:
+      - PG_HOST=postgres
+    volumes:
+      - ./:/home/node/app
+      - /home/node/app/node_modules
+    command: node ace serve --watch
+
+volumes:
+  postgres_db:
